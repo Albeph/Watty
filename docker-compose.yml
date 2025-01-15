@@ -1,0 +1,217 @@
+version: '3.8'
+services:
+  sftp:
+    build:
+      context: ./file_reciver
+      dockerfile: Dockerfile
+    container_name: alpine-sftp-receiver
+    ports:
+      - "2222:22"
+    volumes:
+          - ./mapping:/home/sftpuser/upload
+  logstash-service:
+    image: docker.elastic.co/logstash/logstash:8.17.0
+    environment:
+      XPACK_MONITORING_ENABLED: "false"
+    ports:
+      - "9001:9001"
+    volumes:
+      - ./logstash_http_input.conf:/usr/share/logstash/pipeline/logstash.conf
+    depends_on:
+      topics:
+        condition: service_completed_successfully
+    networks:
+      - tap-network
+    restart: always
+
+  broker:
+    image: apache/kafka:latest
+    hostname: broker
+    container_name: broker
+    ports:
+      - '9999:9999'
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT_HOST://broker:9999,PLAINTEXT://broker:19092'
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@broker:29093'
+      KAFKA_LISTENERS: 'CONTROLLER://:29093,PLAINTEXT_HOST://:9999,PLAINTEXT://:19092'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      CLUSTER_ID: '4L6g3nShT-eMCtK--X86sw'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
+    networks:
+      - tap-network
+    depends_on:
+      sftp:
+        condition: service_completed_successfully
+    restart: always
+
+  topics:
+    image: apache/kafka:latest
+    command: > 
+      bash -c "
+      /opt/kafka/bin/kafka-topics.sh --create --topic energy-monitor --bootstrap-server broker:9999
+      "
+    depends_on:
+      - broker
+    networks:
+      - tap-network
+
+  spark_str_predct_1:
+    build:
+      context: ./spark_data
+      dockerfile: Dockerfile
+    hostname: spark_1
+    container_name: spark_1
+    volumes:
+      - ./mapping/mapping_elettr_conn.csv:/opt/tap/mapping_elettr_conn.csv
+      - ./mapping/zone_room.csv:/opt/tap/zone_room.csv
+      - ./spark_data/code/stream_predict-sp.py:/opt/tap/stream_predict-sp.py
+      - ./spark_data/log-files:/opt/tap/log-files
+      - ./spark_data/predict:/opt/tap/predict
+    command: > 
+      /opt/spark/bin/spark-submit --conf spark.driver.extraJavaOptions="-Divy.cache.dir=/tmp -Divy.home=/tmp" --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.1,org.elasticsearch:elasticsearch-spark-30_2.12:8.17.0 /opt/tap/stream_predict-sp.py 
+    depends_on:
+      topics:
+        condition: service_completed_successfully
+      init_1:
+        condition: service_completed_successfully
+    networks:
+      - tap-network
+    restart: always
+
+  spark_1minwh_2:
+    build:
+      context: ./spark_data
+      dockerfile: Dockerfile
+    hostname: spark_2
+    container_name: spark_2
+    volumes:
+      - ./mapping/mapping_elettr_conn.csv:/opt/tap/mapping_elettr_conn.csv
+      - ./mapping/zone_room.csv:/opt/tap/zone_room.csv
+      - ./spark_data/code/1minWh-sp.py:/opt/tap/1minWh-sp.py
+    command: > 
+      /opt/spark/bin/spark-submit --conf spark.driver.extraJavaOptions="-Divy.cache.dir=/tmp -Divy.home=/tmp" --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.1,org.elasticsearch:elasticsearch-spark-30_2.12:8.17.0 /opt/tap/1minWh-sp.py 
+    depends_on:
+      topics:
+        condition: service_completed_successfully
+      init_2:
+        condition: service_completed_successfully
+    networks:
+      - tap-network
+    restart: always
+
+  init_1:
+    image: alpine/curl
+    depends_on:
+      - elasticsearch
+    entrypoint: >
+      sh -c "
+      until curl -s -X PUT 'http://elasticsearch:9200/energy-stream' -H 'Content-Type: application/json' -d'
+      {
+        \"mappings\": {
+          \"properties\": {
+            \"timestamp\": {
+              \"type\": \"date\"
+            },
+            \"nome_zona\": {
+              \"type\": \"keyword\"
+            },
+            \"elettrodomestico\": {
+              \"type\": \"keyword\"
+            },
+            \"potenza_istantanea\": {
+              \"type\": \"double\"
+            },
+            \"probability_percentages\": {
+              \"type\": \"double\"
+            },
+            \"state\": {
+              \"type\": \"keyword\"
+            },
+            \"role\": {
+              \"type\": \"keyword\"
+            }
+          }
+        }
+      }
+      '; do
+        echo 'Waiting for Elasticsearch...'
+        sleep 5
+      done
+
+      exit 0
+      "
+    networks:
+      - tap-network
+
+  init_2:
+    image: alpine/curl
+    depends_on:
+      - elasticsearch
+    entrypoint: >
+      sh -c "
+      until curl -s -X PUT 'http://elasticsearch:9200/energy-consumption' -H 'Content-Type: application/json' -d'
+      {
+        \"mappings\": {
+          \"properties\": {
+            \"f_timestamp\": {
+              \"type\": \"date\"
+            },
+            \"nome_zona\": {
+              \"type\": \"keyword\"
+            },
+            \"elettrodomestico\": {
+              \"type\": \"keyword\"
+            },
+            \"consumo_Wm\": {
+              \"type\": \"double\"
+            }
+          }
+        }
+      }
+      '; do
+        echo 'Waiting for Elasticsearch...'
+        sleep 5
+      done
+
+      exit 0
+      "
+    networks:
+      - tap-network
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.17.0
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ESJAVAOPTS=-Xmx6g
+    ports:
+      - "9201:9200"
+    networks:
+      - tap-network
+    restart: always
+    depends_on:
+      sftp:
+        condition: service_completed_successfully
+    mem_limit: 6g
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.17.0
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    networks:
+      - tap-network
+    restart: always
+
+networks:
+  tap-network:
+    driver: bridge

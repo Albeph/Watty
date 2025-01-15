@@ -1,0 +1,1 @@
+{"class":"org.apache.spark.ml.feature.StringIndexerModel","timestamp":1736377185918,"sparkVersion":"3.5.3","uid":"StringIndexer_efe09708e816","paramMap":{"outputCol":"elettrodomesticoIndex","inputCol":"elettrodomestico","handleInvalid":"keep"},"defaultParamMap":{"stringOrderType":"frequencyDesc","outputCol":"StringIndexer_efe09708e816__output","handleInvalid":"error"}}

@@ -1,0 +1,2 @@
+zona,prodotto_id,elettrodomestico,role,connection,device_ip,device_nm
+1,1,Frigorifero,essential,simulation,192.168.11.180:9096,

@@ -1,0 +1,1 @@
+{"class":"org.apache.spark.ml.feature.VectorAssembler","timestamp":1736377187882,"sparkVersion":"3.5.3","uid":"VectorAssembler_870141f80788","paramMap":{"inputCols":["elettrodomesticoIndex","potenza_istantanea"],"outputCol":"features"},"defaultParamMap":{"handleInvalid":"error","outputCol":"VectorAssembler_870141f80788__output"}}
