@@ -1,7 +1,7 @@
+<img src="./.images/IMG_3305.jpg"  width="10%"/> 
+
 # Watty - a TAP project
 ## Introduzione
-<img src="./.images/IMG_3305.jpg"  width="10%"/>
-
 ### Cos'è
 Watty mira a fornire una soluzione per il monitoraggio e l'analisi dell'utilizzo dei vari elettrodomestici in tempo reale.
 ### Da dove nasce
