@@ -13,12 +13,8 @@ RUN apt-get update && \
     apt-get update && \
     apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
-# start the container
-#RUN adduser user && usermod -aG docker user && newgrp docker
 RUN apt install -y php php-curl php-yaml sshpass && mkdir /app
 ADD ./client_device /app
 WORKDIR /app
-#RUN chown -cR user /app
+
 EXPOSE 80
-CMD ["sh", "-c", "dockerd & php -S 0.0.0.0:80"]
-#USER user

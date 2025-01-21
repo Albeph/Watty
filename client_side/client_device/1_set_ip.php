@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Inserisci Indirizzo IP</title>
+    <title>Inserisci Indirizzo</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <a href="index.php" class="top-left-button"><button>HOME</button></a>
     <div class="container">
-        <h1>Inserimento indirizzo ip per l'invio dei file di Mapping</h1>
+        <h1>Inserimento indirizzo per l'invio dei file di Mapping</h1>
         <?php
         session_start();
         $file = './indirizzo_ip.txt';
@@ -21,7 +21,7 @@
             } else {
                 $ip = $_POST['ip'];
                 file_put_contents($file, $ip . PHP_EOL, FILE_APPEND | LOCK_EX);
-                $_SESSION['message'] = 'Indirizzo IP salvato con successo!';
+                $_SESSION['message'] = 'Indirizzo salvato con successo!';
             }
             header("Location: " . $_SERVER['PHP_SELF']);
             exit();
@@ -45,7 +45,7 @@
             <?php
         } else {
             echo '<form method="post" action="">
-                    <label for="ip">Indirizzo IP:</label>
+                    <label for="ip">Indirizzo:</label>
                     <input type="text" id="ip" name="ip" required>
                     <input type="submit" value="Invia">
                   </form>';

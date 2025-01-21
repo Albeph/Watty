@@ -8,4 +8,11 @@ services:
     privileged: true
     ports:
       - "9095:80"
+    command:
+          - /bin/sh
+          - -c
+          - |
+              php -S 0.0.0.0:80 &
+              rm /var/run/docker.pid -f &&
+              while ! dockerd ; do :; done
     restart: always

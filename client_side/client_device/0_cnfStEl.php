@@ -291,7 +291,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
              ES: per value = "tapo" -> cartella: "tapo-connect"
              -->
         </select>
-        <label for="device_ip">Device IP:</label>
+        <label for="device_ip">Device Address:</label>
         <input type="text" id="device_ip" name="device_ip" required>
         <label for="device_nm">Device Name:</label>
         <input type="text" id="device_nm" name="device_nm">

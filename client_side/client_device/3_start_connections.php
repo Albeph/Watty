@@ -79,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['server'])) {
 }
 
 if (isset($_POST['run_docker_compose'])) {
-    shell_exec('docker compose -f ./connections/docker-compose.yml -p connections up --build -d 2>&1');
+    shell_exec('docker compose -f ./connections/docker-compose.yml -p connections up -d 2>&1');
 }
 
 if (isset($_POST['stop_docker_compose'])) {
