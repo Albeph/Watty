@@ -41,7 +41,7 @@ Il cliente che, ipoteticamente, acquista il servizio viene fornito di un disposi
 #### Requisiti: 
 - Docker
 #### Installazione
-1. Copiare l'intero contenuto della cartella `_Utility/server_side` all'interno del dispositivo server
+1. Copiare l'intero contenuto della cartella `_utility/server_side` all'interno del dispositivo server
 2. Eseguire lo script `start.sh`
 #### In caso sia necessario fermare il container
 Usare lo script `stop.sh`, in quanto quest'ultimo comprende l'argomento '-v' il quale elimina il contenuto dei volumi dichiarati nel docker compose.
@@ -49,7 +49,7 @@ Usare lo script `stop.sh`, in quanto quest'ultimo comprende l'argomento '-v' il 
 #### Requisiti: 
 - Docker 
 #### Installazione
-1. Copiare l'intero contenuto della cartella `_Utility/client_side` all'interno del dispositivo client
+1. Copiare l'intero contenuto della cartella `_utility/client_side` all'interno del dispositivo client
 2. Eseguire lo script start.sh
 3. Navigare usando il browser su <ip_della_macchina>:porta
 #### Configurazione
@@ -76,7 +76,7 @@ La configurazione è totalmente guidata, ma ecco alcune note:
 
 - In caso i valori non siano più attuali, è possibile modificare i parametri per generare nuovi valori simulati ed addestrare il modello su quest'ultimi.
 ### Anche questo è implementato attravero l'utilizzo di un container Docker
-All'interno della cartella _utility/addestramento, sono presenti due script:
+All'interno della cartella `_utility/addestramento`, sono presenti due script:
 - build.sh
 - start.sh
 
