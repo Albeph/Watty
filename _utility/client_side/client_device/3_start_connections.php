@@ -75,12 +75,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['server'])) {
     ];
 
     file_put_contents('./connections/docker-compose.yml', yaml_emit($docker_compose));
-    shell_exec('docker compose -f ./connections/docker-compose.yml build >&1');
-    echo "docker-compose.yml generated and built successfully.";
+    echo "docker-compose.yml generated successfully.";
 }
 
 if (isset($_POST['run_docker_compose'])) {
-    shell_exec('docker compose -f ./connections/docker-compose.yml -p connections up -d 2>&1');
+    shell_exec('docker compose -f ./connections/docker-compose.yml -p connections up --build -d 2>&1');
 }
 
 if (isset($_POST['stop_docker_compose'])) {

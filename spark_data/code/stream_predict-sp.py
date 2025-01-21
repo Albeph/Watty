@@ -56,12 +56,12 @@ os.makedirs(log_directory, exist_ok=True)
 # Lettura file CSV per mappatura zone-elettrodomestici
 
 #elettrodomestici
-temp_mapping_df = spark.read.csv("/opt/tap/mapping_elettr_conn.csv", header=True)
+temp_mapping_df = spark.read.csv("/opt/tap/mapping/mapping_elettr_conn.csv", header=True)
 
 mapping_df = temp_mapping_df.select("zona","prodotto_id","elettrodomestico","role")
 
 #zone
-zone_room_df = spark.read.csv("/opt/tap/zone_room.csv", header=True)
+zone_room_df = spark.read.csv("/opt/tap/mapping/zone_room.csv", header=True)
 
 
 # Caricamento del modello addestrato

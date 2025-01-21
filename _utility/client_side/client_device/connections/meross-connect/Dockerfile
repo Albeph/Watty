@@ -1,7 +1,7 @@
 FROM python:3.9.21-alpine3.21
 
 # Install the dependencies
-RUN pip install tapo && pip install pytz && pip install requests
+RUN pip install meross_iot && pip install pytz && pip install requests && apk add iputils
 
 USER 1000
 

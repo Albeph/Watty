@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Benvenuto</title>
+    <title>Benvenuto in Watty</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <h1>Benvenuto</h1>
-        <p>inserire didascalia</p>
+        <h1>Benvenuto in Watty</h1>
+        <p>Per un corretto utilizzo del prodotto la invitiamo a leggere la documentazione</p>
         
         <?php
         $dockerComposePath = './connections/docker-compose.yml';

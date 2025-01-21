@@ -44,8 +44,7 @@ def send_value(current_power):
             "zona": zone_id,
             "prodotto_id": product_id,
             "value": current_power,
-            "timestamp": datetime.now(timezone('CET')).isoformat() #pytz.timezone necessario in quanto la data veniva visualizzata in Coordinated Universal Time (UTC)        
-            #"secr": "123"
+            "timestamp": datetime.now(timezone('CET')).isoformat() #pytz.timezone necessario in quanto la data veniva visualizzata in Coordinated Universal Time (UTC)
         }
     url = f"http://{server}"
     headers = {'Content-Type': 'application/json'}
@@ -56,7 +55,8 @@ def send_value(current_power):
         print(f"Errore durante l'invio dei dati: {e}")
 
 
-def ping(ip):
+def ping(ind):
+        ip = ind.split(':')[0]
         response = os.system(f"ping -c 1 {ip} > /dev/null 2>&1")
         return response == 0
 

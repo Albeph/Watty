@@ -39,7 +39,6 @@ def send_value(current_power):
             "prodotto_id": product_id,
             "value": current_power,
             "timestamp": datetime.now(timezone('CET')).isoformat() #pytz.timezone necessario in quanto la data veniva visualizzata in Coordinated Universal Time (UTC)        
-            #"secr": "123"
         }
     url = f"http://{server}"
     headers = {'Content-Type': 'application/json'}
@@ -49,7 +48,8 @@ def send_value(current_power):
     except requests.exceptions.RequestException as e:
         print(f"Errore durante l'invio dei dati: {e}")
 
-def ping(ip):
+def ping(ind):
+    ip = ind.split(':')[0]
     response = os.system(f"ping -c 1 {ip} > /dev/null 2>&1")
     return response == 0
 
@@ -57,7 +57,6 @@ async def main():
 
     client = ApiClient(email, password)
 
-    #device_ip = "192.168.11.56"
     current_power = 0
 
     # Funzione per inviare un ping

@@ -9,5 +9,6 @@ while true; do
         echo "Both files are present. Stopping the container."
         exit 0
     fi
+    echo "Waiting for the files."
     sleep 10
 done

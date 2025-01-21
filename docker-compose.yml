@@ -8,7 +8,8 @@ services:
     ports:
       - "2222:22"
     volumes:
-          - ./mapping:/home/sftpuser/upload
+      - shared-mapping:/home/sftpuser/upload
+
   logstash-service:
     image: docker.elastic.co/logstash/logstash:8.17.0
     environment:
@@ -70,17 +71,18 @@ services:
     hostname: spark_1
     container_name: spark_1
     volumes:
-      - ./mapping/mapping_elettr_conn.csv:/opt/tap/mapping_elettr_conn.csv
-      - ./mapping/zone_room.csv:/opt/tap/zone_room.csv
+      - shared-mapping:/opt/tap/mapping
+      - shared-log:/opt/tap/log-files
+      #- ./mapping/mapping_elettr_conn.csv:/opt/tap/mapping_elettr_conn.csv
+      #- ./mapping/zone_room.csv:/opt/tap/zone_room.csv
       - ./spark_data/code/stream_predict-sp.py:/opt/tap/stream_predict-sp.py
-      - ./spark_data/log-files:/opt/tap/log-files
       - ./spark_data/predict:/opt/tap/predict
     command: > 
-      /opt/spark/bin/spark-submit --conf spark.driver.extraJavaOptions="-Divy.cache.dir=/tmp -Divy.home=/tmp" --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.1,org.elasticsearch:elasticsearch-spark-30_2.12:8.17.0 /opt/tap/stream_predict-sp.py 
+     /opt/spark/bin/spark-submit --conf spark.driver.extraJavaOptions="-Divy.cache.dir=/tmp -Divy.home=/tmp" --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.1,org.elasticsearch:elasticsearch-spark-30_2.12:8.17.0 /opt/tap/stream_predict-sp.py
     depends_on:
       topics:
         condition: service_completed_successfully
-      init_1:
+      init:
         condition: service_completed_successfully
     networks:
       - tap-network
@@ -93,96 +95,40 @@ services:
     hostname: spark_2
     container_name: spark_2
     volumes:
-      - ./mapping/mapping_elettr_conn.csv:/opt/tap/mapping_elettr_conn.csv
-      - ./mapping/zone_room.csv:/opt/tap/zone_room.csv
+      - shared-mapping:/opt/tap/mapping
+      #- ./mapping/mapping_elettr_conn.csv:/opt/tap/mapping_elettr_conn.csv
+      #- ./mapping/zone_room.csv:/opt/tap/zone_room.csv
       - ./spark_data/code/1minWh-sp.py:/opt/tap/1minWh-sp.py
     command: > 
-      /opt/spark/bin/spark-submit --conf spark.driver.extraJavaOptions="-Divy.cache.dir=/tmp -Divy.home=/tmp" --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.1,org.elasticsearch:elasticsearch-spark-30_2.12:8.17.0 /opt/tap/1minWh-sp.py 
+      /opt/spark/bin/spark-submit --conf spark.driver.extraJavaOptions="-Divy.cache.dir=/tmp -Divy.home=/tmp" --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.1,org.elasticsearch:elasticsearch-spark-30_2.12:8.17.0 /opt/tap/1minWh-sp.py
     depends_on:
       topics:
         condition: service_completed_successfully
-      init_2:
+      init:
         condition: service_completed_successfully
     networks:
       - tap-network
     restart: always
 
-  init_1:
+  log_extractor:
+    build:
+      context: ./log_extractor
+      dockerfile: Dockerfile
+    container_name: log_extractor
+    ports:
+      - "9097:80"
+    volumes:
+      - shared-log:/var/www/html/log-files
+    depends_on:
+      - spark_str_predct_1
+
+  init:
     image: alpine/curl
     depends_on:
-      - elasticsearch
-    entrypoint: >
-      sh -c "
-      until curl -s -X PUT 'http://elasticsearch:9200/energy-stream' -H 'Content-Type: application/json' -d'
-      {
-        \"mappings\": {
-          \"properties\": {
-            \"timestamp\": {
-              \"type\": \"date\"
-            },
-            \"nome_zona\": {
-              \"type\": \"keyword\"
-            },
-            \"elettrodomestico\": {
-              \"type\": \"keyword\"
-            },
-            \"potenza_istantanea\": {
-              \"type\": \"double\"
-            },
-            \"probability_percentages\": {
-              \"type\": \"double\"
-            },
-            \"state\": {
-              \"type\": \"keyword\"
-            },
-            \"role\": {
-              \"type\": \"keyword\"
-            }
-          }
-        }
-      }
-      '; do
-        echo 'Waiting for Elasticsearch...'
-        sleep 5
-      done
-
-      exit 0
-      "
-    networks:
-      - tap-network
-
-  init_2:
-    image: alpine/curl
-    depends_on:
-      - elasticsearch
-    entrypoint: >
-      sh -c "
-      until curl -s -X PUT 'http://elasticsearch:9200/energy-consumption' -H 'Content-Type: application/json' -d'
-      {
-        \"mappings\": {
-          \"properties\": {
-            \"f_timestamp\": {
-              \"type\": \"date\"
-            },
-            \"nome_zona\": {
-              \"type\": \"keyword\"
-            },
-            \"elettrodomestico\": {
-              \"type\": \"keyword\"
-            },
-            \"consumo_Wm\": {
-              \"type\": \"double\"
-            }
-          }
-        }
-      }
-      '; do
-        echo 'Waiting for Elasticsearch...'
-        sleep 5
-      done
-
-      exit 0
-      "
+      - kibana
+    volumes:
+      - ./ES_files:/usr/local/bin/ES_files
+    entrypoint: sh -c "chmod 777 /usr/local/bin/ES_files/* && /usr/local/bin/ES_files/main.sh"
     networks:
       - tap-network
 
@@ -215,3 +161,7 @@ services:
 networks:
   tap-network:
     driver: bridge
+
+volumes:
+  shared-mapping:
+  shared-log:

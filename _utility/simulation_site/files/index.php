@@ -290,7 +290,7 @@ foreach ($room_product_appliance as $row) {
                     const productId = applianceIndex;
                     const value = randomValue;
 
-                    fetch(`#?zone_id=${zoneId}&product_id=${productId}&value=${value}`)
+                    fetch(`<?php echo $_SERVER['PHP_SELF']; ?>?zone_id=${zoneId}&product_id=${productId}&value=${value}`)
                         .then(response => response.text())
                         .then(data => console.log(data));
                 });

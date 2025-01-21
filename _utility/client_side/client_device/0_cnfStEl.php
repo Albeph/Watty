@@ -283,8 +283,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <select id="connection" name="connection" required onchange="handleConnectionChange()">
             <option value="" disabled selected>Seleziona una connessione</option>
             <option value="simulation">Simulation</option>
-            <option value="tapo">Tapo</option>
+            <option value="tapo">Tapo - p110</option>
             <option value="meross">Meross</option>
+            <!-- Aggiungere nuova option in caso di implementazioni di nuovi device-->
+            <!-- N.B. il valore value deve essere corrispondente a ciò che sta prima del trattino 
+             nel nome della cartella della nuova implementazione
+             ES: per value = "tapo" -> cartella: "tapo-connect"
+             -->
         </select>
         <label for="device_ip">Device IP:</label>
         <input type="text" id="device_ip" name="device_ip" required>

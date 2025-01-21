@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  client_device:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    privileged: true
+    ports:
+      - "9095:80"

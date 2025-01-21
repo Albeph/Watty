@@ -5,6 +5,17 @@ import requests
 import asyncio
 import os
 import time
+import csv
+
+
+# importare le credenziali se necessario
+with open('./pass.csv', mode='r') as file:
+    reader = csv.DictReader(file)
+    credentials = next(reader)
+    email = credentials['email']
+    password = credentials['pass']
+
+#importare i dati del dispositivo
 
 device_ip = os.getenv('device_ip')
 zone_id = os.getenv('zone_id')
@@ -24,13 +35,14 @@ print(zone_id)
 print(product_id)
 print(server)
 
+# script per inviare i dati a logstash
+
 def send_value(current_power):
     values = {
             "zona": zone_id,
             "prodotto_id": product_id,
             "value": current_power,
             "timestamp": datetime.now(timezone('CET')).isoformat() #pytz.timezone necessario in quanto la data veniva visualizzata in Coordinated Universal Time (UTC)        
-            #"secr": "123"
         }
     url = f"http://{server}"
     headers = {'Content-Type': 'application/json'}
@@ -40,13 +52,16 @@ def send_value(current_power):
     except requests.exceptions.RequestException as e:
         print(f"Errore durante l'invio dei dati: {e}")
 
-def ping(ip):
+# ping per evitare di intasare le api del costruttore
+
+def ping(ind):
+    ip = ind.split(':')[0]
     response = os.system(f"ping -c 1 {ip} > /dev/null 2>&1")
     return response == 0
 
 async def main():
 
-    current_power = -1
+    #INSERISCI CODICE PERSONALIZZATO
 
     # Funzione per inviare un ping
     
@@ -55,11 +70,10 @@ async def main():
         if not ping(device_ip):
             current_power = -1
         else:
-            response = requests.get(f"http://{device_ip}/{zone_id}{product_id}")
-            if response.status_code == 200:
-                current_power = response.json()
-            else:
-                current_power = -1
+            #INSERISCI CODICE PERSONALIZZATO
+
+            current_power = -1 # current_power è il posto dove inserire il valore della potenza istantanea estrapolato dalle API del sensore
+        
         
         send_value(current_power)
         print(f"Current power: {current_power}")
