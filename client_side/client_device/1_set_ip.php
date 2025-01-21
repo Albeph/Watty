@@ -34,7 +34,7 @@
 
         if (file_exists($file)) {
             ?>
-            <p>Indirizzo IP salvato: <?php echo file_get_contents($file); ?></p>
+            <p>Indirizzo salvato: <?php echo file_get_contents($file); ?></p>
             <form method="post" action="">
                 <input type="submit" name="reset" value="Modifica Indirizzo IP">
             </form>
