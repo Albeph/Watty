@@ -8,3 +8,4 @@ services:
     privileged: true
     ports:
       - "9095:80"
+    restart: always
